@@ -1,17 +1,18 @@
-package monitor
+package handlers
 
 import (
   "../cloudflare"
+  "../core"
   "log"
   "fmt"
 )
 
-func newCloudflareHandler(config ReactionConfig) *GenericHandler {
+func NewCloudflareHandler(config core.ReactionConfig) *core.GenericHandler {
   if config.Options["email"] == "" || config.Options["apiKey"] == "" || config.Options["domain"] == "" || config.Options["name"] == "" || config.Options["ttl"] == "" {
     log.Fatal(fmt.Sprintf("Misconfigured cloudflare handler: %#v", config))
   }
 
-  return runHandler(make(chan Transition, 5), &cloudflareHandler{
+  return core.NewGenericHandler(make(chan core.Transition, 5), &cloudflareHandler{
     config,
     cloudflare.NewClient(config.Options["email"], config.Options["apiKey"]),
     make(map[string]bool),
@@ -19,26 +20,26 @@ func newCloudflareHandler(config ReactionConfig) *GenericHandler {
 }
 
 type cloudflareHandler struct{
-  config ReactionConfig
+  config core.ReactionConfig
   client *cloudflare.Client
   actuallyDownHosts map[string]bool
 }
 
-func (this *cloudflareHandler) handle(transition Transition) {
+func (this *cloudflareHandler) Handle(transition core.Transition) {
   switch transition.To {
-    case Down:
+    case core.Down:
       log.Print(fmt.Sprintf(
         "Removed cloudflare record for `%s`: `%v`\n",
         transition.RecordValue,
         this.removeCloudflareRecord(transition.RecordValue)))
 
-    case Up:
+    case core.Up:
       log.Print(fmt.Sprintf(
         "Added cloudflare record for `%s`: `%v`\n",
         transition.RecordValue,
         this.addCloudflareRecord(transition.RecordValue)))
 
-    case Unknown: //just leave it how it was, going up/down is idempotent anyways
+    case core.Unknown: //just leave it how it was, going up/down is idempotent anyways
   }
 }
 

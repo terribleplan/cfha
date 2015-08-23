@@ -1,4 +1,4 @@
-package monitor
+package core
 
 type Config struct {
   Checks []CheckConfig

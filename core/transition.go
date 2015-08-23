@@ -1,4 +1,4 @@
-package monitor
+package core
 
 type Status int
 
@@ -24,4 +24,3 @@ type Transition struct {
   From Status
   RecordValue string
 }
-

@@ -1,23 +1,35 @@
-package monitor
+package core
+
+import (
+  "log"
+  "fmt"
+)
 
 type Engine struct {
   Input chan Result
-  output []*GenericHandler
+  handlers []*GenericHandler
+  killswitch chan bool
 }
 
-func CreateEngine(handlers []*GenericHandler) *Engine {
-  input := make(chan Result)
+func NewEngine() *Engine {
+  return &Engine{
+    make(chan Result),
+    make([]*GenericHandler, 0),
+    make(chan bool, 1),
+  }
+}
 
-  engine := Engine{
-    input,
-    handlers,
+func (this *Engine) AddHandler(handler *GenericHandler) {
+  if handler == nil {
+    return
   }
 
-  e := &engine
+  this.handlers = append(this.handlers, handler)
+  log.Print(fmt.Sprintf("%v", this.handlers))
+}
 
-  go e.startProcessor()
-
-  return e
+func (this *Engine) Run() {
+  go this.startProcessor()
 }
 
 func (this *Engine) startProcessor() {
@@ -38,8 +50,8 @@ func (this *Engine) startProcessor() {
     }
 
     //Send the record to everyone who cares
-    for _, relay := range this.output {
-      relay.channel<- change
+    for _, relay := range this.handlers {
+      relay.Channel<- change
     }
 
     //And set our new status

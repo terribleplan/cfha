@@ -1,4 +1,4 @@
-package monitor
+package core
 
 type Result struct {
   RecordValue string

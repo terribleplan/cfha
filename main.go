@@ -5,7 +5,8 @@ import (
   "fmt"
   "io/ioutil"
   "encoding/json"
-  "./monitor"
+  "./core"
+  "./engine"
 )
 
 func main() {
@@ -14,24 +15,17 @@ func main() {
     log.Fatal(fmt.Sprintf("%v\n", err))
   }
 
-  c := monitor.Config{}
+  c := core.Config{}
   json.Unmarshal(file, &c)
 
+  engines := make([]*core.Engine, 0)
+
   for _, check := range c.Checks {
-    handlers := make([]*monitor.GenericHandler, 0)
+    engines = append(engines, engine.EngineFromConfig(check))
+  }
 
-    for _, reaction := range check.Reactions {
-      handler := monitor.CreateHandler(reaction)
-
-      if handler == nil {
-        continue
-      }
-
-      handlers = append(handlers, handler)
-    }
-
-    engine := monitor.CreateEngine(handlers)
-    monitor.CreateCheck(check.Interval, engine, check.Target)
+  for _, engine := range engines {
+    engine.Run()
   }
 
   select{}
