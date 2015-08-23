@@ -1,14 +1,11 @@
 package monitor
 
-import (
-)
-
 type Engine struct {
   Input chan Result
-  output []GenericHandler
+  output []*GenericHandler
 }
 
-func CreateEngine(handlers []GenericHandler) *Engine {
+func CreateEngine(handlers []*GenericHandler) *Engine {
   input := make(chan Result)
 
   engine := Engine{

@@ -5,7 +5,7 @@ import (
   "log"
 )
 
-func NewLogHandler() GenericHandler {
+func newLogHandler(config ReactionConfig) *GenericHandler {
   return runHandler(make(chan Transition), &logHandler{})
 }
 

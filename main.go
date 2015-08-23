@@ -17,14 +17,21 @@ func main() {
   c := monitor.Config{}
   json.Unmarshal(file, &c)
 
-  handlers := make([]monitor.GenericHandler, 2)
-  handlers[0] = monitor.NewLogHandler()
-  handlers[1] = monitor.NewCloudflareHandler(c.Cloudflare)
+  for _, check := range c.Checks {
+    handlers := make([]*monitor.GenericHandler, 0)
 
-  engine := monitor.CreateEngine(handlers)
+    for _, reaction := range check.Reactions {
+      handler := monitor.CreateHandler(reaction)
 
-  for _, endpoint := range c.Hosts {
-    monitor.CreateCheck(c.Interval, engine, endpoint)
+      if handler == nil {
+        continue
+      }
+
+      handlers = append(handlers, handler)
+    }
+
+    engine := monitor.CreateEngine(handlers)
+    monitor.CreateCheck(check.Interval, engine, check.Target)
   }
 
   select{}

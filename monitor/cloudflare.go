@@ -6,16 +6,20 @@ import (
   "fmt"
 )
 
-func NewCloudflareHandler(config CloudflareConfig) GenericHandler {
+func newCloudflareHandler(config ReactionConfig) *GenericHandler {
+  if config.Options["email"] == "" || config.Options["apiKey"] == "" || config.Options["domain"] == "" || config.Options["name"] == "" || config.Options["ttl"] == "" {
+    log.Fatal(fmt.Sprintf("Misconfigured cloudflare handler: %#v", config))
+  }
+
   return runHandler(make(chan Transition, 5), &cloudflareHandler{
     config,
-    cloudflare.NewClient(config.Email, config.ApiKey),
+    cloudflare.NewClient(config.Options["email"], config.Options["apiKey"]),
     make(map[string]bool),
   })
 }
 
 type cloudflareHandler struct{
-  config CloudflareConfig
+  config ReactionConfig
   client *cloudflare.Client
   actuallyDownHosts map[string]bool
 }
@@ -26,20 +30,20 @@ func (this *cloudflareHandler) handle(transition Transition) {
       log.Print(fmt.Sprintf(
         "Removed cloudflare record for `%s`: `%v`\n",
         transition.RecordValue,
-        removeCloudflareRecord(this.client, this.config, transition.RecordValue)))
+        this.removeCloudflareRecord(transition.RecordValue)))
 
     case Up:
       log.Print(fmt.Sprintf(
         "Added cloudflare record for `%s`: `%v`\n",
         transition.RecordValue,
-        addCloudflareRecord(this.client, this.config, transition.RecordValue)))
+        this.addCloudflareRecord(transition.RecordValue)))
 
     case Unknown: //just leave it how it was, going up/down is idempotent anyways
   }
 }
 
-func removeCloudflareRecord(client *cloudflare.Client, config CloudflareConfig, recordValue string) bool {
-  records, err := client.RetrieveRecordsByName(config.Domain, config.Name)
+func (this *cloudflareHandler) removeCloudflareRecord(recordValue string) bool {
+  records, err := this.client.RetrieveRecordsByName(this.config.Options["Domain"], this.config.Options["Name"])
 
   if err != nil {
     return false
@@ -51,22 +55,22 @@ func removeCloudflareRecord(client *cloudflare.Client, config CloudflareConfig, 
       continue
     }
 
-    exitStatus = exitStatus && client.DestroyRecord(config.Domain, record.Id) == nil
+    exitStatus = exitStatus && this.client.DestroyRecord(this.config.Options["domain"], record.Id) == nil
   }
 
   return exitStatus
 }
 
-func addCloudflareRecord(client *cloudflare.Client, config CloudflareConfig, recordValue string) bool {
+func (this *cloudflareHandler) addCloudflareRecord(recordValue string) bool {
   opts := cloudflare.CreateRecord{
     "A",
-    config.Name,
+    this.config.Options["name"],
     recordValue,
     "1",
     "0",
   }
 
-  _, err := client.CreateRecord(config.Domain, &opts)
+  _, err := this.client.CreateRecord(this.config.Options["domain"], &opts)
 
   if err != nil {
     return fmt.Sprintf("%s", err) == "API Error: The record already exists."

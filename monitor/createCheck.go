@@ -10,7 +10,7 @@ import (
 type checkConfig struct {
   engine *Engine
   interval time.Duration
-  host HostConfig
+  host TargetConfig
 }
 
 type httpChecker struct {
@@ -57,7 +57,7 @@ func newHttpChecker(config checkConfig) *httpChecker {
   return &checker
 }
 
-func CreateCheck(interval uint16, engine *Engine, host HostConfig) {
+func CreateCheck(interval uint16, engine *Engine, host TargetConfig) {
   config := checkConfig{
     engine,
     time.Duration(int64(interval)) * time.Second,

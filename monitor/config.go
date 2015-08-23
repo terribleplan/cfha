@@ -1,21 +1,22 @@
 package monitor
 
-type HostConfig struct {
-  Host string
+type Config struct {
+  Checks []CheckConfig
+}
+
+type CheckConfig struct {
+  Interval uint16
+  Target TargetConfig
+  Reactions []ReactionConfig
+}
+
+type TargetConfig struct {
   Type string
+  Host string
   Options map[string]string
 }
 
-type CloudflareConfig struct {
-  Email string
-  ApiKey string
-  Domain string
-  Name string
-  Ttl string
-}
-
-type Config struct {
-  Cloudflare CloudflareConfig
-  Hosts []HostConfig
-  Interval uint16
+type ReactionConfig struct {
+  Type string
+  Options map[string]string
 }
