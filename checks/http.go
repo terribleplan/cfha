@@ -8,14 +8,12 @@ import (
   "fmt"
 )
 
-func NewHttpChecker(config core.CheckCreateConfig) *HttpChecker {
-  checker := HttpChecker{
+func NewHttpChecker(config core.CheckCreateConfig) *core.GenericCheck {
+  return core.NewGenericCheck(&HttpChecker{
     &http.Client{},
     config,
     config.Host.Type + "://" + config.Host.Host + "/",
-  }
-  go checker.run()
-  return &checker
+  })
 }
 
 type HttpChecker struct {
@@ -24,16 +22,16 @@ type HttpChecker struct {
   endpoint string
 }
 
-func (this *HttpChecker) run() {
-  interval := time.Duration(this.config.Interval) * time.Second
-  log.Print(fmt.Sprintf("Starting: %v\n", this.config.Host))
-  for true {
-    this.config.Engine.Input<- core.Result{
-      this.config.Host.Host,
-      this.check(),
-    }
-    time.Sleep(interval)
+func (this *HttpChecker) Check() time.Duration {
+  this.config.Engine.Input<- core.Result{
+    this.config.Host.Host,
+    this.check(),
   }
+  return this.config.Interval
+}
+
+func (this *HttpChecker) Stop() bool {
+  return true
 }
 
 func (this *HttpChecker) check() core.Status {

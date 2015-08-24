@@ -11,7 +11,9 @@ func EngineFromConfig(config core.CheckConfig) *core.Engine {
     engine.AddHandler(createHandler(reaction))
   }
 
-  createCheck(config.Interval, engine, config.Target)
+  for _, target := range config.Targets {
+    engine.AddCheck(createCheck(engine, target))
+  }
 
   return engine
 }

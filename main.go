@@ -3,7 +3,10 @@ package main
 import (
   "log"
   "fmt"
+  "os"
+  "syscall"
   "io/ioutil"
+  "os/signal"
   "encoding/json"
   "./core"
   "./engine"
@@ -24,9 +27,13 @@ func main() {
     engines = append(engines, engine.EngineFromConfig(check))
   }
 
-  for _, engine := range engines {
-    engine.Run()
-  }
+  sigs := make(chan os.Signal, 1)
+  signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+  <-sigs
 
-  select{}
+  log.Print(fmt.Sprintf("Stopping."))
+  for _, engine := range engines {
+    engine.Stop()
+  }
+  log.Print("Exiting.")
 }

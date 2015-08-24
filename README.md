@@ -12,32 +12,8 @@ and placed in whatever directory you will run CFHA from.
 
 Example configuration file:
 
-```js
-{
-  "hosts": [ //an array of hosts to check
-    {
-      "host": "192.168.1.1", //the IP address of the host
-      "type": "http", //the type of check to run, can be either http or https
-      "options": {} //optional additional parameters to the check module
-    },
-    {
-      "host": "192.168.1.2",
-      "type": "https",
-      "options": {
-        "hostname": "lb-check-hostname" //this is the only currently supported parameter, and will be sent as the "host" header of an http(s) request
-      }
-    }
-  ],
-  "cloudflare": { //cloudflare configuration
-    "email": "cfemail@example.com",
-    "apiKey": "CF_API_KEY", //get this from your cloudflare profile
-    "domain": "example.com", //the domain in cloudflare you will be operating on
-    "name": "lb.example.com", //the full dns record you wish to edit
-    "ttl": "1" //1 is automatic, otherwise see the cloudflare documentation on TTL
-  },
-  "interval": 1 //how often (in seconds) to ping the server, note that this is a number, not a string
-}
-```
+(the configuration format is currently in flux, the example will be updated when it is stable. for now just look at `core/config` and build a json object to match `Config`)
+
 
 Limitations
 ===========

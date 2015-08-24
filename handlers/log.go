@@ -18,3 +18,7 @@ func (this *logHandler) Handle(transition core.Transition) {
     transition.RecordValue, transition.To,
     transition.To.String()))
 }
+
+func (this *logHandler) Stop() bool {
+  return true
+}

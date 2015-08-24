@@ -5,12 +5,12 @@ type Config struct {
 }
 
 type CheckConfig struct {
-  Interval uint16
-  Target TargetConfig
+  Targets []TargetConfig
   Reactions []ReactionConfig
 }
 
 type TargetConfig struct {
+  Interval uint16
   Type string
   Host string
   Options map[string]string

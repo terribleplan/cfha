@@ -43,6 +43,10 @@ func (this *cloudflareHandler) Handle(transition core.Transition) {
   }
 }
 
+func (this *cloudflareHandler) Stop() bool {
+  return true
+}
+
 func (this *cloudflareHandler) removeCloudflareRecord(recordValue string) bool {
   records, err := this.client.RetrieveRecordsByName(this.config.Options["Domain"], this.config.Options["Name"])
 
